@@ -21,10 +21,10 @@ class App extends React.Component {
     }
   }
 
-  componentDidMount() {
-    blogService.getAll().then(blogs =>
-      this.setState({blogs})
-    )
+  async componentDidMount() {
+    const blogs = await blogService.getAll()
+    blogs.sort((a, b) => b.likes - a.likes)
+    this.setState({blogs})
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
@@ -65,11 +65,66 @@ class App extends React.Component {
     window.location.reload()
   }
 
-  updateBlogs() {
-    blogService.getAll().then(blogs =>
-      this.setState({blogs})
-    )
+  handleAnnouncement(message) {
+    if (message.includes('Error')) {
+      this.setState({
+        error: message,
+      })
+      setTimeout(() => {
+        this.setState({ error: null })
+      }, 5000)
+    } else {
+      this.setState({
+        announcement: message,
+      })
+      setTimeout(() => {
+        this.setState({ announcement: null })
+      }, 5000)
+    }
   }
+
+
+
+
+  async updateBlogs() {
+    const blogs = await blogService.getAll()
+    blogs.sort((a, b) => b.likes - a.likes)
+    this.setState({blogs})
+  }
+
+  like = (blog) => {
+    return async () => {
+      const updatedBlog = {
+        user: blog.user._id,
+        likes: (blog.likes + 1),
+        author: blog.author,
+        title: blog.title,
+        url: blog.url
+      }
+      const updated = await blogService.update(blog.id, updatedBlog)
+      console.log(updated)
+      this.updateBlogs()
+      /* const blogs = this.state.blogs.filter(blog => blog.id !== updated.id).concat(updated)
+      this.setState({blogs})*/
+
+    }
+  }
+
+  removeBlog = (blog) => {
+    return async () => {
+      try {
+        window.confirm(`delete ${blog.title} by ${blog.author}?`)
+        const response = await blogService.remove(blog.id)
+        console.log(response)
+        this.handleAnnouncement(response)
+        this.updateBlogs()
+        this.handleAnnouncement('blog deleted')
+      } catch(exception) {
+        this.handleAnnouncement('Error: something went wrong')
+      }
+      }
+    }
+
 
   addBlog = async (event) => {
     event.preventDefault()
@@ -179,7 +234,7 @@ class App extends React.Component {
         </Togglable>
         <h2>blogs</h2>
         {this.state.blogs.map(blog =>
-          <Blog key={blog.id} blog={blog}/>
+          <Blog key={blog.id} blog={blog} like={this.like} removeBlog={this.removeBlog}/>
         )}
       </div>
     )
