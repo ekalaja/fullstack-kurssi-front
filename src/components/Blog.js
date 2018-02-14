@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 class Blog extends React.Component {
   constructor (props) {
     super(props)
@@ -37,17 +38,19 @@ class Blog extends React.Component {
 
     return (
       <div style={blogStyle}>
-        <p onClick={this.toggleVisibility}>{this.props.blog.title} : {this.props.blog.author}</p>
-        <div style={showWhenVisible}>
+        <p className="title" onClick={this.toggleVisibility}>{this.props.blog.title} : {this.props.blog.author}</p>
+        <div style={showWhenVisible} className="togglableContent">
           <table>
             <tbody>
               <tr>
                 <td>
-                  <a>{this.props.blog.url}</a>
+                  <a className="url">{this.props.blog.url}</a>
                 </td>
               </tr>
               <tr>
-                <td>{this.props.blog.likes} likes <button onClick={this.props.like(this.props.blog)}>like</button></td>
+                <td>
+                  <a className="likes">{this.props.blog.likes} likes <button onClick={this.props.like(this.props.blog)}>like</button></a>
+                </td>
               </tr>
               <tr>
                 <td><button style={showDelete} onClick={this.props.removeBlog(this.props.blog)}>delete</button></td>
@@ -62,4 +65,11 @@ class Blog extends React.Component {
     )
   }
 }
+
+Blog.propTypes = {
+  like: PropTypes.func.isRequired,
+  removeBlog: PropTypes.func.isRequired,
+  blog: PropTypes.object.isRequired
+}
+
 export default Blog
