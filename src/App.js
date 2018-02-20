@@ -200,7 +200,7 @@ class App extends React.Component {
         <h2>Log in to application</h2>
 
         <form onSubmit={this.login}>
-          <div>
+          <div className="usernameField" >
             username&nbsp;&nbsp;
             <input
               type="text"
