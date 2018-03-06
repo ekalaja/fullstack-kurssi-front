@@ -3,6 +3,8 @@ import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import Notification from './components/Notification'
+import { notify } from './reducers/notificationReducer'
+import { connect } from 'react-redux'
 import Togglable from './components/Togglable'
 
 class App extends React.Component {
@@ -11,8 +13,6 @@ class App extends React.Component {
     this.state = {
       blogs: [],
       user: null,
-      error: null,
-      announcement: null,
       username: '',
       password: '',
       newTitle: '',
@@ -43,12 +43,7 @@ class App extends React.Component {
       blogService.setToken(user.token)
       this.setState({ username: '', password: '', user})
     } catch(exception) {
-      this.setState({
-        error: 'wrong username or password',
-      })
-      setTimeout(() => {
-        this.setState({ error: null })
-      }, 5000)
+      this.handleAnnouncement('Wrong username or password')
     }
   }
 
@@ -65,7 +60,7 @@ class App extends React.Component {
     window.location.reload()
   }
 
-  handleAnnouncement(message) {
+  /*handleAnnouncement(message) {
     if (message.includes('Error')) {
       this.setState({
         error: message,
@@ -81,8 +76,10 @@ class App extends React.Component {
         this.setState({ announcement: null })
       }, 5000)
     }
+  }*/
+  handleAnnouncement(message) {
+    this.props.notify(message, 5)
   }
-
 
 
 
@@ -102,7 +99,7 @@ class App extends React.Component {
         url: blog.url
       }
       const updated = await blogService.update(blog.id, updatedBlog)
-      console.log(updated)
+      this.handleAnnouncement(`blog ${blog.title} voted`)
       this.updateBlogs()
       /* const blogs = this.state.blogs.filter(blog => blog.id !== updated.id).concat(updated)
       this.setState({blogs})*/
@@ -116,7 +113,6 @@ class App extends React.Component {
         window.confirm(`delete ${blog.title} by ${blog.author}?`)
         const response = await blogService.remove(blog.id)
         console.log(response)
-        this.handleAnnouncement(response)
         this.updateBlogs()
         this.handleAnnouncement('blog deleted')
       } catch(exception) {
@@ -139,15 +135,11 @@ class App extends React.Component {
       console.log(blog)
       if(blog.id !== undefined) {
         this.setState({
-          announcement: `a new blog ${blog.title} by ${blog.author}`,
           newTitle: '',
           newAuthor: '',
           newUrl: ''
         })
-        setTimeout(() => {
-          this.setState({ announcement: null })
-        }, 5000)
-
+          this.handleAnnouncement(`a new blog ${blog.title} by ${blog.author}`)
       }
 
   } catch(exception) {
@@ -225,8 +217,6 @@ class App extends React.Component {
 
     const loggedIn = () => (
       <div>
-        <Notification message={this.state.announcement} />
-
         <p>{this.state.user.name} logged in</p>
         <button onClick={this.handleLogout}>logout</button>
         <Togglable buttonLabel="Add New">
@@ -242,7 +232,7 @@ class App extends React.Component {
 
     return (
       <div>
-        <Notification message={this.state.error} type={'error'} />
+        <Notification />
         {this.state.user === null ?
           loginForm() :
           loggedIn()
@@ -253,4 +243,7 @@ class App extends React.Component {
   }
 }
 
-export default App;
+export default connect(
+  null,
+  { notify }
+)(App)
