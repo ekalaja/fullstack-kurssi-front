@@ -6,12 +6,18 @@ import Notification from './components/Notification'
 import { notify } from './reducers/notificationReducer'
 import { connect } from 'react-redux'
 import Togglable from './components/Togglable'
+import { userInitialization } from './reducers/userReducer'
+import { blogInitialization } from './reducers/blogReducer'
+import { blogLike, blogCreation, blogRemove } from './reducers/blogReducer'
+
+import UserList from './components/UserList'
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
+import User from './components/User'
 
 class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      blogs: [],
       user: null,
       username: '',
       password: '',
@@ -22,13 +28,13 @@ class App extends React.Component {
   }
 
   async componentDidMount() {
-    const blogs = await blogService.getAll()
-    blogs.sort((a, b) => b.likes - a.likes)
-    this.setState({blogs})
+    this.props.userInitialization()
+    this.props.blogInitialization()
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       this.setState({user})
+      blogService.setToken(JSON.parse(loggedUserJSON).token)
     }
   }
 
@@ -60,50 +66,15 @@ class App extends React.Component {
     window.location.reload()
   }
 
-  /*handleAnnouncement(message) {
-    if (message.includes('Error')) {
-      this.setState({
-        error: message,
-      })
-      setTimeout(() => {
-        this.setState({ error: null })
-      }, 5000)
-    } else {
-      this.setState({
-        announcement: message,
-      })
-      setTimeout(() => {
-        this.setState({ announcement: null })
-      }, 5000)
-    }
-  }*/
   handleAnnouncement(message) {
     this.props.notify(message, 5)
   }
 
-
-
-  async updateBlogs() {
-    const blogs = await blogService.getAll()
-    blogs.sort((a, b) => b.likes - a.likes)
-    this.setState({blogs})
-  }
-
   like = (blog) => {
-    return async () => {
-      const updatedBlog = {
-        user: blog.user._id,
-        likes: (blog.likes + 1),
-        author: blog.author,
-        title: blog.title,
-        url: blog.url
-      }
-      const updated = await blogService.update(blog.id, updatedBlog)
-      this.handleAnnouncement(`blog ${blog.title} voted`)
-      this.updateBlogs()
-      /* const blogs = this.state.blogs.filter(blog => blog.id !== updated.id).concat(updated)
-      this.setState({blogs})*/
+    return () => {
 
+      this.props.blogLike(blog)
+      this.handleAnnouncement(`blog ${blog.title} voted`)
     }
   }
 
@@ -111,45 +82,40 @@ class App extends React.Component {
     return async () => {
       try {
         window.confirm(`delete ${blog.title} by ${blog.author}?`)
-        const response = await blogService.remove(blog.id)
-        console.log(response)
-        this.updateBlogs()
+        this.props.blogRemove(blog)
+        /*const response = await blogService.remove(blog.id)*/
+        /*this.updateBlogs()*/
         this.handleAnnouncement('blog deleted')
       } catch(exception) {
         this.handleAnnouncement('Error: something went wrong')
       }
-      }
     }
-
+  }
 
   addBlog = async (event) => {
     event.preventDefault()
     try {
     const blogObject = {
+      user: this.state.user,
       author: this.state.newAuthor,
       title: this.state.newTitle,
       url: this.state.newUrl
     }
-    const blog = await blogService.create(blogObject)
-      this.updateBlogs()
-      console.log(blog)
-      if(blog.id !== undefined) {
-        this.setState({
+    this.props.blogCreation(blogObject)
+    /*const blog = await blogService.create(blogObject)*/
+      /*this.updateBlogs()*/
+      /*if(blog.id !== undefined) {*/
+      this.setState({
           newTitle: '',
           newAuthor: '',
           newUrl: ''
         })
-          this.handleAnnouncement(`a new blog ${blog.title} by ${blog.author}`)
-      }
+      /* this.handleAnnouncement(`a new blog ${blog.title} by ${blog.author}`)
+       }*/
 
   } catch(exception) {
-    this.setState({
-      error: 'invalid blog information',
-    })
-    setTimeout(() => {
-      this.setState({ error: null })
-    }, 5000)
-  }
+      this.handleAnnouncement('invalid blog information')
+    }
   }
 
   render() {
@@ -223,27 +189,51 @@ class App extends React.Component {
           {blogForm()}
         </Togglable>
         <h2>blogs</h2>
-        {this.state.blogs.map(blog =>
+        {this.props.blogs.map(blog =>
           <Blog key={blog.id} blog={blog} like={this.like} removeBlog={this.removeBlog}/>
         )}
       </div>
     )
 
+    const userById = (id) => {
+      return this.props.users.find(user => user.id === (id))
+    }
 
     return (
       <div>
-        <Notification />
-        {this.state.user === null ?
-          loginForm() :
-          loggedIn()
-        }
+        <Router>
+          <div>
+            <div>
+              <Link to="/">home</Link> &nbsp;
+              <Link to="/users">users</Link>
+            </div>
+            <Notification />
+            <Route exact path="/users" render={() => <UserList />} />
+            <Route exact path="/users/:id" render={({match}) =>
+              <User user={userById(match.params.id)} />}
+            />
+            {this.state.user === null ?
+              loginForm() :
+              loggedIn()
+            }
+          </div>
+        </Router>
       </div>
 
     );
   }
 }
 
+
+const mapStateToProps =  (state) => {
+  return {
+    users: state.users,
+    blogs: state.blogs
+  }
+}
+
+
 export default connect(
-  null,
-  { notify }
+  mapStateToProps,
+  { notify, userInitialization, blogInitialization, blogLike, blogCreation, blogRemove}
 )(App)
