@@ -194,6 +194,12 @@ class App extends React.Component {
         )}
       </div>
     )
+    const loggedOrNot = () => {
+      if (this.state.user===null) {
+        return loginForm()
+      }
+      return loggedIn()
+    }
 
     const userById = (id) => {
       return this.props.users.find(user => user.id === (id))
@@ -212,10 +218,7 @@ class App extends React.Component {
             <Route exact path="/users/:id" render={({match}) =>
               <User user={userById(match.params.id)} />}
             />
-            {this.state.user === null ?
-              loginForm() :
-              loggedIn()
-            }
+            <Route exact path="/" render={() => loggedOrNot()} />
           </div>
         </Router>
       </div>
@@ -224,14 +227,12 @@ class App extends React.Component {
   }
 }
 
-
 const mapStateToProps =  (state) => {
   return {
     users: state.users,
     blogs: state.blogs
   }
 }
-
 
 export default connect(
   mapStateToProps,

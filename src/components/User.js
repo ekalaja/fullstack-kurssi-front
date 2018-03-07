@@ -7,8 +7,14 @@ const User = (props) => {
   }
   return (
     <div>
-      <h1>User</h1>
+      {console.log(props.user.blogs)}
       <h2>{props.user.name}</h2>
+      <h3>added blogs</h3>
+      {props.user.blogs.map(blog =>
+          <div key={blog._id}>
+            <li>{blog.title}</li>
+          </div>
+      )}
     </div>)
 }
 
