@@ -5,7 +5,7 @@ class Blog extends React.Component {
     super(props)
     this.state = {
       props: props,
-      visible: false,
+      /*visible: false,*/
       visibleDelete: rightsToDelete(props)
     }
 
@@ -20,9 +20,9 @@ class Blog extends React.Component {
     }
   }
 
-  toggleVisibility = () => {
+  /*toggleVisibility = () => {
     this.setState({visible: !this.state.visible})
-  }
+  }*/
 
   render () {
     const blogStyle = {
@@ -32,14 +32,14 @@ class Blog extends React.Component {
       borderWidth: 1,
       marginBottom: 1
     }
-    const showWhenVisible = {display: this.state.visible ? '' : 'none'}
+    /*const showWhenVisible = {display: this.state.visible ? '' : 'none'}*/
     const showDelete = {display: this.state.visibleDelete? '' : 'none'}
 
 
     return (
       <div style={blogStyle}>
-        <p className="title" onClick={this.toggleVisibility}>{this.props.blog.title} : {this.props.blog.author}</p>
-        <div style={showWhenVisible} className="togglableContent">
+        <a className="title" href={`/blogs/${this.props.blog.id}`}>{this.props.blog.title} : {this.props.blog.author}</a>
+        <div>
           <table>
             <tbody>
               <tr>

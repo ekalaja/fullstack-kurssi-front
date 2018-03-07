@@ -1,5 +1,6 @@
 import React from 'react'
 import Blog from './components/Blog'
+import BlogPage from './components/BlogPage'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import Notification from './components/Notification'
@@ -183,8 +184,6 @@ class App extends React.Component {
 
     const loggedIn = () => (
       <div>
-        <p>{this.state.user.name} logged in</p>
-        <button onClick={this.handleLogout}>logout</button>
         <Togglable buttonLabel="Add New">
           {blogForm()}
         </Togglable>
@@ -202,7 +201,33 @@ class App extends React.Component {
     }
 
     const userById = (id) => {
+      console.log(this.props)
       return this.props.users.find(user => user.id === (id))
+    }
+    const blogById = (id) => {
+      console.log(this.props)
+      console.log('appista blogi',this.props.blogs.find(blog => blog.id === (id)))
+      return this.props.blogs.find(blog => blog.id === (id))
+    }
+
+    const loggedOrNotMenu = () => {
+      if (this.state.user===null) {
+        return (
+          <div>
+            <Link to="/">home</Link> &nbsp;
+          </div>
+        )
+      } else {
+        return (
+          <div>
+            <Link to="/">home</Link> &nbsp;
+            <Link to="/users">users</Link>
+            &nbsp;&nbsp; {this.state.user===null ? null : this.state.user.name}  logged in
+            &nbsp;
+            <button onClick={this.handleLogout}>logout</button>
+          </div>
+        )
+      }
     }
 
     return (
@@ -210,13 +235,15 @@ class App extends React.Component {
         <Router>
           <div>
             <div>
-              <Link to="/">home</Link> &nbsp;
-              <Link to="/users">users</Link>
+              {loggedOrNotMenu()}
             </div>
             <Notification />
             <Route exact path="/users" render={() => <UserList />} />
             <Route exact path="/users/:id" render={({match}) =>
               <User user={userById(match.params.id)} />}
+            />
+            <Route exact path="/blogs/:id" render={({match}) =>
+              <BlogPage like={this.like} blog={blogById(match.params.id)} />}
             />
             <Route exact path="/" render={() => loggedOrNot()} />
           </div>
