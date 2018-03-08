@@ -8,11 +8,11 @@ import { notify } from './reducers/notificationReducer'
 import { connect } from 'react-redux'
 import Togglable from './components/Togglable'
 import { userInitialization } from './reducers/userReducer'
-import { blogInitialization } from './reducers/blogReducer'
-import { blogLike, blogCreation, blogRemove } from './reducers/blogReducer'
+import { blogInitialization, blogLike, blogCreation, blogRemove } from './reducers/blogReducer'
+import { NavLink } from 'react-router-dom'
 
 import UserList from './components/UserList'
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Route } from 'react-router-dom'
 import User from './components/User'
 
 class App extends React.Component {
@@ -62,6 +62,10 @@ class App extends React.Component {
     this.setState({ [event.target.name]: event.target.value })
   }
 
+  handleCommentFieldChange = (event) => {
+    this.setState({ [event.target.name]: event.target.value })
+  }
+
   handleLogout() {
     window.localStorage.clear()
     window.location.reload()
@@ -78,6 +82,8 @@ class App extends React.Component {
       this.handleAnnouncement(`blog ${blog.title} voted`)
     }
   }
+
+
 
   removeBlog = (blog) => {
     return async () => {
@@ -118,6 +124,26 @@ class App extends React.Component {
       this.handleAnnouncement('invalid blog information')
     }
   }
+
+  /*addComment = async (event) => {
+    event.preventDefault()
+
+    console.log('heiHEI')
+
+    try {
+      const commentObject = {
+        title: this.state.newComment,
+        id: event.target.id
+      }
+      this.props.commentCreation(commentObject)
+      this.setState({
+        newComment: ''
+      })
+    } catch(exception) {
+    this.handleAnnouncement('invalid comment information')
+  }
+
+  }*/
 
   render() {
 
@@ -210,18 +236,29 @@ class App extends React.Component {
       return this.props.blogs.find(blog => blog.id === (id))
     }
 
-    const loggedOrNotMenu = () => {
+    const Menu = () => {
+      const menuBoxStyle =  {
+        backgroundColor: 'lightBlue',
+        padding: '10px',
+        border: '1px solid gray',
+        margin: '0'
+      }
+      const menuStyle={
+        fontWeight: 'bold',
+        color: 'blue',
+        backgroundColor: 'lightBlue'
+      }
       if (this.state.user===null) {
         return (
-          <div>
-            <Link to="/">home</Link> &nbsp;
+          <div style={menuBoxStyle}>
+            <NavLink exact activeStyle={menuStyle} to="/">home</NavLink> &nbsp;
           </div>
         )
       } else {
         return (
-          <div>
-            <Link to="/">home</Link> &nbsp;
-            <Link to="/users">users</Link>
+          <div style={menuBoxStyle}>
+            <NavLink exact activeStyle={menuStyle} to="/">home</NavLink> &nbsp;
+            <NavLink exact activeStyle={menuStyle} to="/users">users</NavLink>
             &nbsp;&nbsp; {this.state.user===null ? null : this.state.user.name}  logged in
             &nbsp;
             <button onClick={this.handleLogout}>logout</button>
@@ -235,7 +272,7 @@ class App extends React.Component {
         <Router>
           <div>
             <div>
-              {loggedOrNotMenu()}
+              {Menu()}
             </div>
             <Notification />
             <Route exact path="/users" render={() => <UserList />} />
@@ -243,7 +280,7 @@ class App extends React.Component {
               <User user={userById(match.params.id)} />}
             />
             <Route exact path="/blogs/:id" render={({match}) =>
-              <BlogPage like={this.like} blog={blogById(match.params.id)} />}
+              <BlogPage like={this.like} removeBlog={this.removeBlog} blog={blogById(match.params.id)} />}
             />
             <Route exact path="/" render={() => loggedOrNot()} />
           </div>
@@ -263,5 +300,5 @@ const mapStateToProps =  (state) => {
 
 export default connect(
   mapStateToProps,
-  { notify, userInitialization, blogInitialization, blogLike, blogCreation, blogRemove}
+  { notify, userInitialization, blogInitialization, blogLike, blogCreation, blogRemove }
 )(App)
