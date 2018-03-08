@@ -5,7 +5,6 @@ class Blog extends React.Component {
     super(props)
     this.state = {
       props: props,
-      /*visible: false,*/
       visibleDelete: rightsToDelete(props)
     }
 
@@ -20,10 +19,6 @@ class Blog extends React.Component {
     }
   }
 
-  /*toggleVisibility = () => {
-    this.setState({visible: !this.state.visible})
-  }*/
-
   render () {
     const blogStyle = {
       paddingTop: 1,
@@ -34,7 +29,6 @@ class Blog extends React.Component {
     }
     /*const showWhenVisible = {display: this.state.visible ? '' : 'none'}*/
     const showDelete = {display: this.state.visibleDelete? '' : 'none'}
-
 
     return (
       <div style={blogStyle}>

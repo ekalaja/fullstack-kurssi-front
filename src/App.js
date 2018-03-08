@@ -62,10 +62,6 @@ class App extends React.Component {
     this.setState({ [event.target.name]: event.target.value })
   }
 
-  handleCommentFieldChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value })
-  }
-
   handleLogout() {
     window.localStorage.clear()
     window.location.reload()
@@ -117,33 +113,11 @@ class App extends React.Component {
           newAuthor: '',
           newUrl: ''
         })
-      /* this.handleAnnouncement(`a new blog ${blog.title} by ${blog.author}`)
-       }*/
 
   } catch(exception) {
       this.handleAnnouncement('invalid blog information')
     }
   }
-
-  /*addComment = async (event) => {
-    event.preventDefault()
-
-    console.log('heiHEI')
-
-    try {
-      const commentObject = {
-        title: this.state.newComment,
-        id: event.target.id
-      }
-      this.props.commentCreation(commentObject)
-      this.setState({
-        newComment: ''
-      })
-    } catch(exception) {
-    this.handleAnnouncement('invalid comment information')
-  }
-
-  }*/
 
   render() {
 
@@ -208,7 +182,8 @@ class App extends React.Component {
       </div>
     )
 
-    const loggedIn = () => (
+    const loggedIn =  () => {
+      return (
       <div>
         <Togglable buttonLabel="Add New">
           {blogForm()}
@@ -219,6 +194,7 @@ class App extends React.Component {
         )}
       </div>
     )
+    }
     const loggedOrNot = () => {
       if (this.state.user===null) {
         return loginForm()
@@ -227,12 +203,9 @@ class App extends React.Component {
     }
 
     const userById = (id) => {
-      console.log(this.props)
       return this.props.users.find(user => user.id === (id))
     }
     const blogById = (id) => {
-      console.log(this.props)
-      console.log('appista blogi',this.props.blogs.find(blog => blog.id === (id)))
       return this.props.blogs.find(blog => blog.id === (id))
     }
 
@@ -279,8 +252,8 @@ class App extends React.Component {
             <Route exact path="/users/:id" render={({match}) =>
               <User user={userById(match.params.id)} />}
             />
-            <Route exact path="/blogs/:id" render={({match}) =>
-              <BlogPage like={this.like} removeBlog={this.removeBlog} blog={blogById(match.params.id)} />}
+            <Route exact path="/blogs/:id" render={({match, history}) =>
+              <BlogPage history={history} like={this.like} removeBlog={this.removeBlog} blog={blogById(match.params.id)} />}
             />
             <Route exact path="/" render={() => loggedOrNot()} />
           </div>

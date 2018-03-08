@@ -20,7 +20,7 @@ const blogReducer = (state = [], action) => {
   if (action.type === 'COMMENT') {
     console.log('action: ',action)
     console.log('state:', state)
-    return [...state, action.blog]
+    return action.data
   }
 
   if (action.type === 'REMOVE') {
@@ -55,9 +55,7 @@ export const blogLike = (data) => {
 
 export const blogCreation = (data) => {
   return async (dispatch) => {
-    console.log('blogCreation data: ',data)
-    const blog = await blogService.create(data.id, data.title)
-    console.log('blogi awaitista', blog)
+    const blog = await blogService.create(data)
     dispatch({
       type: 'CREATE',
       blog: { ...blog, likes: 0 }
@@ -67,21 +65,20 @@ export const blogCreation = (data) => {
 
 export const commentCreation = (data) => {
   return async (dispatch) => {
-    console.log('comment data: ',data)
-    const blog = await blogService.comment(data)
-    console.log('blogi awaitista', blog)
+    await blogService.comment(data.blogId, data)
+    /*hacking like a maniac... last exercise to complete*/
+    const blogs = await blogService.getAll()
+
     dispatch({
       type: 'COMMENT',
-      data
+      data: blogs
     })
   }
 }
 
 export const blogRemove = (data) => {
   return async (dispatch) => {
-    console.log('remove data: ',data)
-    const blog = await blogService.remove(data.id)
-    console.log('blogi: ',blog)
+    await blogService.remove(data.id)
     dispatch({
       type: 'REMOVE',
       data
